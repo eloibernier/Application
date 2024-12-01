@@ -1,8 +1,11 @@
-# Application
-Northwestern University - Eloi Code Sample
+# Northwestern University - Eloi Code Sample
+Welcome to my code sample repository, created as part of my application to Northwestern University. This repository highlights my coding skills and experience, with examples in Python and VBA.
 
-This repository has been created in order to do the application at Northwestern University
+## About the Repository
+This repository contains a small but meaningful selection of code, curated to showcase my programming abilities. While not exhaustive, these samples reflect my competency and practical approach to solving problems.
 
-Not a lot of code has been uploaded. Just enough to show that I am able to code in Python.
+## Folder: For Fun
+This folder includes a weekend project I worked on for fun! I explored various aspects of my city's bikeshare service to better understand its functionality. This project gave me an opportunity to apply my skills in Python while exploring a real-world problem.
 
-I will include VBA code as well.
+## Additional Contributions
+Alongside Python code, I’ve also included examples of VBA code to demonstrate my versatility with different programming tools.
