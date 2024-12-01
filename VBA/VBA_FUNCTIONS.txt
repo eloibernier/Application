@@ -1,0 +1,316 @@
+Option Explicit
+
+Public Function rangeExists(wkb As Workbook, sRange As String) As Boolean
+    Dim r   As Range
+    
+    On Error GoTo FuncEnd
+    
+    Set r = wkb.Names(sRange).RefersToRange
+    Set r = Nothing
+    rangeExists = True
+    Exit Function
+    
+FuncEnd:
+rangeExists = False
+End Function
+
+Public Function SplitPlus(Expression As String, Optional Delimiter As String = ",", Optional TextQual As String = """") As Variant
+    Dim i           As Long
+    Dim j           As Long
+    Dim k           As Long
+    Dim M           As Long
+    Dim N           As Long
+    Dim vTemp()     As String
+    Dim vS()        As String
+    Dim s           As String
+    
+    vTemp = Split(Expression, Delimiter)
+    
+    i = LBound(vTemp)
+    Do While i < UBound(vTemp)
+        N = (Len(vTemp(i)) - Len(Replace(vTemp(i), TextQual, ""))) / Len(TextQual)
+        If N Mod 2 = 1 Then
+            s = ""
+            j = i + 1
+            Do While j <= UBound(vTemp)
+                M = (Len(vTemp(j)) - Len(Replace(vTemp(j), TextQual, ""))) / Len(TextQual)
+                
+                If M Mod 2 = 1 Or j = UBound(vTemp) Then
+                    s = s & Format(vTemp(j))
+                    vTemp(i) = vTemp(i) & s
+                    ReDim vS(0 To i + UBound(vTemp) - j)
+                    
+                    For k = 0 To i
+                        vS(k) = vTemp(i)
+                    Next
+                    
+                    For k = j + 1 To UBound(vS)
+                        vS(k) = vTemp(UBound(vTemp) - k)
+                    Next
+                    
+                    vTemp = vS
+                    s = ""
+                    j = UBound(vTemp) + 1
+                Else
+                    s = s & Format(vTemp(j))
+                    j = j + 1
+                End If
+                
+            Loop
+        End If
+        
+        i = i + 1
+    Loop
+
+    SplitPlus = vTemp
+
+End Function
+
+Public Function XIRRNeg(Val As Range, Dates As Range, _
+                    Optional X0 As Double = 0.05, Optional N As Long = 50, Optional Tol As Double = 10 ^ -6) As Double
+    Dim i           As Long
+    Dim j           As Long
+    Dim k           As Long
+    Dim dblT()      As Double
+    Dim dblVal()    As Double
+    Dim blnColumn   As Boolean
+    Dim F           As Double
+    Dim df          As Double
+    Dim xn          As Double
+    Dim dblDiff     As Double
+    
+    If Val.Rows.Count > 1 And Val.Columns.Count > 1 Then
+        XIRRNeg = CVErr(xlErrValue)
+    ElseIf Dates.Rows.Count > 1 And Dates.Columns.Count > 1 Then
+        XIRRNeg = CVErr(xlErrValue)
+    ElseIf Val.Rows.Count = 1 And Val.Columns.Count = 1 Then
+        XIRRNeg = CVErr(xlErrValue)
+    ElseIf Dates.Rows.Count = 1 And Dates.Columns.Count = 1 Then
+        XIRRNeg = CVErr(xlErrValue)
+    ElseIf Dates.Rows.Count <> Val.Rows.Count And Dates.Columns.Count <> Val.Columns.Count Then
+        XIRRNeg = CVErr(xlErrValue)
+    End If
+    
+    If Val.Rows.Count > Val.Columns.Count Then
+        ReDim dblT(0 To Val.Rows.Count - 1)
+        ReDim dblVal(0 To Val.Rows.Count - 1)
+        blnColumn = False
+    Else
+        ReDim dblT(0 To Val.Columns.Count - 1)
+        ReDim dblVal(0 To Val.Columns.Count - 1)
+        blnColumn = True
+    End If
+    
+    i = 0
+    j = 0
+    k = 0
+    Do While i <= UBound(dblT) And j <= UBound(dblT)
+        If Dates.Cells(i + 1, j + 1).Value = "" Then
+            dblT(k) = dblT(0)
+            dblVal(k) = 0
+        Else
+            dblT(k) = Dates.Cells(i + 1, j + 1)
+            dblVal(k) = Val.Cells(i + 1, j + 1)
+        End If
+        
+        If k > 0 Then
+            dblT(k) = (dblT(k) - dblT(0)) / 365
+        End If
+        
+        If blnColumn Then
+            j = j + 1
+        Else
+            i = i + 1
+        End If
+        
+        k = k + 1
+        
+    Loop
+
+    xn = X0
+    For i = 0 To N - 1
+        
+        F = dblVal(0)
+        df = 0
+        For j = 1 To UBound(dblVal)
+            F = F - (1 + xn) ^ -dblT(j) * dblVal(j)
+            df = df + dblT(j) * (1 + xn) ^ -(dblT(j) + 1) * dblVal(j)
+        Next
+        
+        If df = 0 Then
+            i = N
+        Else
+            dblDiff = xn
+            xn = xn - F / df
+            dblDiff = Abs(dblDiff - xn)
+        End If
+        
+        If dblDiff < Tol Then
+            i = N
+        End If
+    Next
+
+    XIRRNeg = xn
+
+End Function
+
+Public Function CELLFORMULA(r As Range) As String
+    
+    CELLFORMULA = r.Formula
+    
+End Function
+
+Public Function Match(Val As Variant, r As Range) As Long
+    Dim i   As Long
+    
+    On Error GoTo FuncEnd
+    
+    i = Application.WorksheetFunction.Match(Val, r, 0)
+    
+    Match = i
+    Exit Function
+FuncEnd:
+    Match = 0
+End Function
+
+Public Function CountColour(rng As Range, Colour As Double) As Long
+    Dim r   As Range
+    Dim i   As Long
+    
+    i = 0
+    For Each r In rng
+        If r.Interior.Color = Colour Then
+            i = i + 1
+        End If
+    Next
+
+    CountColour = i
+End Function
+
+Public Function getLink(i As Long) As String
+    Dim vLinks As Variant
+    On Error GoTo FuncEnd
+    
+    vLinks = ThisWorkbook.LinkSources(xlExcelLinks)
+    getLink = vLinks(i)
+    
+    Exit Function
+FuncEnd:
+    getLink = "No link #" & Format(i)
+End Function
+
+Public Function getLinkA(i As Long) As Variant()
+    Application.Volatile
+    Dim vLinks  As Variant
+    Dim vOut()  As Variant
+    Dim s       As String
+    
+    On Error GoTo FuncEnd
+    
+    ReDim vOut(0 To 0, 0 To 2)
+    
+    vLinks = ThisWorkbook.LinkSources(xlExcelLinks)
+    vOut(0, 2) = vLinks(i)
+    vOut(0, 0) = "Folder missing"
+    vOut(0, 1) = "File missing"
+        
+    s = Left(vOut(0, 2), InStrRev(vOut(0, 2), "\"))
+    If Dir(vOut(0, 2)) <> "" Then
+        vOut(0, 0) = "Folder Exists"
+        vOut(0, 1) = "File Exists"
+    ElseIf Dir(s) <> "" Then
+        vOut(0, 0) = "Folder Exists"
+    End If
+    
+    getLinkA = vOut
+    Exit Function
+FuncEnd:
+    vOut(0, 0) = "No link #" & Format(i)
+    vOut(0, 1) = ""
+    vOut(0, 2) = ""
+    getLinkA = vOut
+End Function
+
+Public Function SortA2(Arr() As Variant, Ind As Integer, Optional Desc As Boolean = False) As Variant()
+    Dim i           As Integer
+    Dim j           As Integer
+    Dim TempArr()   As Variant
+    Dim Temp        As Variant
+    Dim blnFlag     As Boolean
+    Dim bln         As Boolean
+    
+    blnFlag = True
+    
+    TempArr = Arr
+    ReDim Temp(0 To UBound(TempArr, 1))
+    
+    Do While blnFlag
+        bln = False
+        For i = 0 To UBound(TempArr, 2) - 1
+            If ((Not Desc) And (TempArr(Ind, i) < TempArr(Ind, i + 1))) _
+                    Or (Desc And (TempArr(Ind, i) > TempArr(Ind, i + 1))) Then
+                For j = 0 To UBound(TempArr, 1)
+                    Temp = TempArr(j, i)
+                    TempArr(j, i) = TempArr(j, i + 1)
+                    TempArr(j, i + 1) = Temp
+                Next
+                bln = bln Or True
+            Else
+                bln = bln Or False
+            End If
+        Next
+        blnFlag = bln
+    Loop
+    
+    SortA2 = TempArr
+
+End Function
+
+'''''''
+'''''''Option Explicit
+'''''''
+'''''''Private Sub CommandButton1_Click()
+'''''''    Dim i   As Long
+'''''''    Dim j   As Long
+'''''''    Dim r   As Range
+'''''''    Dim c   As Range
+'''''''    Dim s   As String
+'''''''    Dim N   As Long
+'''''''    Dim intCols()   As Long
+'''''''
+'''''''    Set r = Range("E13")
+'''''''
+'''''''    i = 0
+'''''''    j = 0
+'''''''    Do While r.Value <> ""
+'''''''        If Right(r.Value, 2) = "VI" Or r.Value = "FRN" Then
+'''''''            ReDim Preserve intCols(0 To i)
+'''''''
+'''''''            intCols(i) = j
+'''''''            i = i + 1
+'''''''        End If
+'''''''        j = j + 1
+'''''''
+'''''''        Set r = r.Offset(0, 1)
+'''''''    Loop
+'''''''
+'''''''    N = i * 753
+'''''''
+'''''''    j = 0
+'''''''    For i = 0 To UBound(intCols)
+'''''''        Set r = Range("E14:E14")
+'''''''        Set r = r.Offset(0, intCols(i))
+'''''''        For Each c In r
+'''''''            s = c.Formula
+'''''''            s = Replace(s, "NL.xlsm", "IL.xlsm")
+'''''''            c.Formula = s
+'''''''            j = j + 1
+'''''''            Application.StatusBar = "Cell " & Format(j) & " of " & Format(N)
+'''''''            DoEvents
+'''''''        Next
+'''''''    Next
+'''''''
+'''''''        Application.StatusBar = ""
+'''''''
+'''''''End Sub
+
